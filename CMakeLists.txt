@@ -35,7 +35,7 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(U4C8-conversoresAD U4C8-conversoresAD.c )
+add_executable(U4C8-conversoresAD U4C8-conversoresAD.c lib/ssd1306.c)
 
 pico_set_program_name(U4C8-conversoresAD "U4C8-conversoresAD")
 pico_set_program_version(U4C8-conversoresAD "0.1")
@@ -55,7 +55,9 @@ target_include_directories(U4C8-conversoresAD PRIVATE
 
 # Add any user requested libraries
 target_link_libraries(U4C8-conversoresAD 
-        
+    hardware_i2c
+    hardware_adc
+    hardware_pwm
         )
 
 pico_add_extra_outputs(U4C8-conversoresAD)
