@@ -27,8 +27,7 @@
 volatile bool green_led_state = false;
 volatile bool pwm_enabled = true;
 volatile bool button_pressed = false;
-volatile uint32_t last_button_a_press_time = 200;
-
+volatile uint32_t last_button_press_time = 200;
 
 // Estrutura para o ssd SSD1306
 ssd1306_t ssd;
@@ -46,11 +45,17 @@ bool debounce(uint32_t *last_time) {
 
 
 // Função de interrupção para o botão A
-void button_a_isr(uint gpio, uint32_t events) {
-    if (debounce(&last_button_a_press_time)) {
+void button_pressed_isr(uint gpio, uint32_t events) {
+    if (gpio == BUTTON_A_PIN && debounce(&last_button_press_time)) {
         pwm_enabled = !pwm_enabled;
     }
+    if (gpio == JOYSTICK_BUTTON && debounce(&last_button_press_time)) {
+        green_led_state = !green_led_state;
+        gpio_put(LED_GREEN, green_led_state);        
+    }
+
 }
+
 
 // Função para configurar o PWM
 void setup_pwm(uint pin) {
@@ -88,16 +93,26 @@ int main() {
 
     // Configuração dos pinos dos LEDs
     setup_pwm(LED_RED);
-    setup_pwm(LED_GREEN);
     setup_pwm(LED_BLUE);
 
+    gpio_init(LED_GREEN);
+    gpio_set_dir(LED_GREEN, GPIO_OUT);
+    pwm_set_gpio_level(LED_GREEN, 4095);
+    
     // Configuração dos botões com interrupções
 
     gpio_init(BUTTON_A_PIN);
     gpio_set_dir(BUTTON_A_PIN, GPIO_IN);
     gpio_pull_up(BUTTON_A_PIN);
-    gpio_set_irq_enabled_with_callback(BUTTON_A_PIN, GPIO_IRQ_EDGE_FALL, true, &button_a_isr);
-  
+
+    gpio_init(JOYSTICK_BUTTON);
+    gpio_set_dir(JOYSTICK_BUTTON, GPIO_IN);
+    gpio_pull_up(JOYSTICK_BUTTON);
+
+
+    gpio_set_irq_enabled_with_callback(BUTTON_A_PIN, GPIO_IRQ_EDGE_FALL, true, &button_pressed_isr);
+    gpio_set_irq_enabled_with_callback(JOYSTICK_BUTTON, GPIO_IRQ_EDGE_FALL, true, &button_pressed_isr);
+   
     // I2C Initialisation. Using it at 400Khz.
     i2c_init(I2C_PORT, 400 * 1000);
 
