@@ -46,7 +46,7 @@ bool debounce(uint32_t *last_time) {
 }
 
 
-// Função de interrupção para o botão A
+// Função de interrupção para os botões 
 void button_pressed_isr(uint gpio, uint32_t events) {
     if (gpio == BUTTON_A_PIN && debounce(&last_button_a_time)) {
         pwm_enabled = !pwm_enabled;
@@ -99,8 +99,7 @@ int main() {
     setup_pwm(LED_BLUE);
 
     gpio_init(LED_GREEN);
-    gpio_set_dir(LED_GREEN, GPIO_OUT);
-    pwm_set_gpio_level(LED_GREEN, 4095);
+    gpio_set_dir(LED_GREEN, GPIO_OUT);    
 
     // Configuração dos botões com interrupções
 
