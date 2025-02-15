@@ -25,9 +25,11 @@
 
 // Variáveis globais
 volatile bool green_led_state = false;
+volatile bool status_borda = true;
 volatile bool pwm_enabled = true;
 volatile bool button_pressed = false;
-volatile uint32_t last_button_press_time = 200;
+volatile uint32_t last_button_a_time = 200;
+volatile uint32_t last_button_joystick_time = 200;
 
 // Estrutura para o ssd SSD1306
 ssd1306_t ssd;
@@ -46,12 +48,13 @@ bool debounce(uint32_t *last_time) {
 
 // Função de interrupção para o botão A
 void button_pressed_isr(uint gpio, uint32_t events) {
-    if (gpio == BUTTON_A_PIN && debounce(&last_button_press_time)) {
+    if (gpio == BUTTON_A_PIN && debounce(&last_button_a_time)) {
         pwm_enabled = !pwm_enabled;
     }
-    if (gpio == JOYSTICK_BUTTON && debounce(&last_button_press_time)) {
+    if (gpio == JOYSTICK_BUTTON && debounce(&last_button_joystick_time)) {
         green_led_state = !green_led_state;
-        gpio_put(LED_GREEN, green_led_state);        
+        gpio_put(LED_GREEN, green_led_state);
+        status_borda = !status_borda;        
     }
 
 }
@@ -98,7 +101,7 @@ int main() {
     gpio_init(LED_GREEN);
     gpio_set_dir(LED_GREEN, GPIO_OUT);
     pwm_set_gpio_level(LED_GREEN, 4095);
-    
+
     // Configuração dos botões com interrupções
 
     gpio_init(BUTTON_A_PIN);
@@ -133,6 +136,8 @@ int main() {
     uint8_t square_x = (WIDTH - SQUARE_SIZE) / 2;
     uint8_t square_y = (HEIGHT - SQUARE_SIZE) / 2;
 
+    
+
     while (1) {
         // Leitura dos valores do joystick
         adc_select_input(1);
@@ -162,8 +167,9 @@ int main() {
         // Desenho no ssd
         ssd1306_fill(&ssd, false);
         ssd1306_rect(&ssd, square_y, square_x, SQUARE_SIZE, SQUARE_SIZE, true, true);
+        ssd1306_rect(&ssd, 0, 0, WIDTH, HEIGHT, status_borda, false);
         ssd1306_send_data(&ssd);
-
+        
         sleep_ms(10);
     }
 
