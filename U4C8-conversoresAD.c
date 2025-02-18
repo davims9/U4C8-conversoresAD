@@ -59,7 +59,6 @@ void button_pressed_isr(uint gpio, uint32_t events) {
 
 }
 
-
 // Função para configurar o PWM
 void setup_pwm(uint pin) {
     gpio_set_function(pin, GPIO_FUNC_PWM);
@@ -67,12 +66,6 @@ void setup_pwm(uint pin) {
     pwm_set_wrap(slice_num, 4095);
     pwm_set_enabled(slice_num, true);
 }
-
-// Função para ajustar o brilho do LED
-void brilho_led(uint pin, uint16_t value) {
-    pwm_set_gpio_level(pin, value);
-}
-
 
 uint16_t intensidade_led(uint16_t value) {
     if (value == 2048) {
@@ -148,14 +141,14 @@ int main() {
         if (pwm_enabled) {
             // Ajusta a intensidade do LED Vermelho com base no eixo X
             uint16_t red_intensity = intensidade_led(x_value);
-            brilho_led(LED_RED, red_intensity);
+            pwm_set_gpio_level(LED_RED, red_intensity);
 
             // Ajusta a intensidade do LED Azul com base no eixo Y
             uint16_t blue_intensity = intensidade_led(y_value);
-            brilho_led(LED_BLUE, blue_intensity);
+            pwm_set_gpio_level(LED_BLUE, blue_intensity);
         } else {
-            brilho_led(LED_RED, 0);
-            brilho_led(LED_BLUE, 0);
+            pwm_set_gpio_level(LED_RED, 0);
+            pwm_set_gpio_level(LED_BLUE, 0);
         }
         
 
